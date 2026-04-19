@@ -4,7 +4,7 @@ definePageMeta({
   middleware: 'auth'
 })
 
-const { data } = await useFetch('/api/auth/me')
+const { data } = await useApiFetch('/api/auth/me')
 
 const stats = [
   { name: 'Total Users', stat: '71,897' },

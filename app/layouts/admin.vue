@@ -10,7 +10,7 @@ const navigation = [
 ]
 
 const logout = async () => {
-  await $fetch('/api/auth/logout', { method: 'POST' })
+  await useApi('/api/auth/logout', { method: 'POST' })
   navigateTo('/admin/login')
 }
 </script>

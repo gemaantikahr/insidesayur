@@ -12,7 +12,7 @@ const handleLogin = async () => {
   loading.value = true
   errorMsg.value = ''
   try {
-    await $fetch('/api/auth/login', {
+    await useApi('/api/auth/login', {
       method: 'POST',
       body: { email: email.value, password: password.value }
     })
