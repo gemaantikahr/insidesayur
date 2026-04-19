@@ -9,7 +9,7 @@ const { data } = await useApiFetch('/api/auth/me')
 const stats = [
   { name: 'Total Users', stat: '71,897' },
   { name: 'Active Orders', stat: '58.16%' },
-  { name: 'Revenue', stat: '$24,574.00' },
+  { name: 'Revenue', stat: 'Rp24,574.00' },
 ]
 </script>
 

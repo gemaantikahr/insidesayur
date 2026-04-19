@@ -269,7 +269,7 @@ const submitForm = async () => {
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   <div v-for="pkg in packagesList" :key="pkg.id" class="flex items-center gap-x-3 bg-gray-50 p-3 rounded-md border border-gray-200">
                     <input :id="'pkg-'+pkg.id" type="checkbox" :value="pkg.id" v-model="form.packageIds" class="h-4 w-4 rounded border-gray-300 text-black focus:ring-black" />
-                    <label :for="'pkg-'+pkg.id" class="text-sm font-medium leading-6 text-gray-900 cursor-pointer select-none">{{ pkg.name }} - ${{ pkg.price }}</label>
+                    <label :for="'pkg-'+pkg.id" class="text-sm font-medium leading-6 text-gray-900 cursor-pointer select-none">{{ pkg.name }} - Rp{{ pkg.price }}</label>
                   </div>
                 </div>
                 <p class="mt-2 text-xs text-gray-500" v-if="packagesList?.length === 0">No packages available.</p>
@@ -308,7 +308,7 @@ const submitForm = async () => {
                   <label class="block text-xs font-medium text-gray-500 mb-1">Price</label>
                   <div class="relative">
                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                      <span class="text-gray-500 sm:text-sm">$</span>
+                      <span class="text-gray-500 sm:text-sm">Rp</span>
                     </div>
                     <input type="number" step="0.01" min="0" v-model="unit.price" required class="block w-full rounded-md border-0 py-1.5 pl-7 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-black sm:text-sm sm:leading-6" />
                   </div>

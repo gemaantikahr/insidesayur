@@ -69,7 +69,7 @@ const deletePackage = async (id: number) => {
                     {{ pkg.name }}
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    ${{ pkg.price }}
+                    Rp{{ pkg.price }}
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                     {{ pkg.sequence }}
