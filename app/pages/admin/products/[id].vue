@@ -11,6 +11,7 @@ const router = useRouter()
 const productId = route.params.id
 
 const { data: categories } = await useApiFetch<any[]>('/api/categories')
+const { data: packagesList } = await useApiFetch<any[]>('/api/packages')
 const { data: product, pending: fetching, error } = await useApiFetch<any>(`/api/products/${productId}`)
 
 if (error.value || !product.value) {
@@ -24,6 +25,7 @@ const form = ref({
   name: '',
   slug: '',
   productCategoryId: '',
+  packageIds: [] as number[],
   description: '',
   isActive: true,
 })
@@ -44,6 +46,10 @@ watchEffect(() => {
     form.value.description = product.value.description || ''
     form.value.isActive = product.value.isActive
     
+    if (product.value.packages) {
+      form.value.packageIds = product.value.packages.map((p: any) => p.id)
+    }
+
     if (product.value.units) {
       units.value = product.value.units.map((u: any) => ({
         id: u.id,
@@ -184,6 +190,9 @@ const submitForm = async () => {
     const retainedImages = existingImages.value.map(img => ({ id: img.id, sequence: img.sequence }))
     formData.append('retained_images', JSON.stringify(retainedImages))
 
+    // Packages
+    formData.append('package_ids', JSON.stringify(form.value.packageIds))
+
     // New Images
     newImages.value.forEach((img) => {
       formData.append(`image_${img.sequence}`, img.file, img.file.name)
@@ -253,6 +262,17 @@ const submitForm = async () => {
                     <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                   </select>
                 </div>
+              </div>
+
+              <div class="col-span-full sm:col-span-6">
+                <label class="block text-sm font-medium leading-6 text-gray-900 mb-2">Packages</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  <div v-for="pkg in packagesList" :key="pkg.id" class="flex items-center gap-x-3 bg-gray-50 p-3 rounded-md border border-gray-200">
+                    <input :id="'pkg-'+pkg.id" type="checkbox" :value="pkg.id" v-model="form.packageIds" class="h-4 w-4 rounded border-gray-300 text-black focus:ring-black" />
+                    <label :for="'pkg-'+pkg.id" class="text-sm font-medium leading-6 text-gray-900 cursor-pointer select-none">{{ pkg.name }} - ${{ pkg.price }}</label>
+                  </div>
+                </div>
+                <p class="mt-2 text-xs text-gray-500" v-if="packagesList?.length === 0">No packages available.</p>
               </div>
 
               <div class="col-span-full">

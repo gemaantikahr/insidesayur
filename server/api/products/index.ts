@@ -32,6 +32,7 @@ export default defineEventHandler(async (event) => {
     let description = ''
     let isActive = true
     let unitsRaw = ''
+    let packageIdsRaw = ''
     const files: { buffer: Buffer, filename: string, mimeType: string, sequence: number }[] = []
 
     // Map to keep track of image sequences. Assuming keys like 'images[0]', 'images[1]'
@@ -42,6 +43,7 @@ export default defineEventHandler(async (event) => {
       if (field.name === 'description') description = field.data.toString('utf-8')
       if (field.name === 'is_active') isActive = field.data.toString('utf-8') === 'true'
       if (field.name === 'units') unitsRaw = field.data.toString('utf-8')
+      if (field.name === 'package_ids') packageIdsRaw = field.data.toString('utf-8')
       
       // Handle images like image_0, image_1 etc. to maintain sequence
       if (field.name && field.name.startsWith('image_') && field.filename) {
@@ -74,6 +76,16 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    // Parse package IDs
+    let packageIds: number[] = []
+    if (packageIdsRaw) {
+      try {
+        packageIds = JSON.parse(packageIdsRaw)
+      } catch (e) {
+        console.error('Failed to parse package IDs', e)
+      }
+    }
+
     // Upload images
     const uploadedImages: { imageUrl: string, sequence: number }[] = []
     for (const file of files) {
@@ -96,13 +108,17 @@ export default defineEventHandler(async (event) => {
           units: {
             create: unitsData.map(u => ({ label: u.label, price: u.price }))
           },
+          packages: {
+            connect: packageIds.map(id => ({ id }))
+          },
           images: {
             create: uploadedImages.map(img => ({ imageUrl: img.imageUrl, sequence: img.sequence }))
           }
         },
         include: {
           units: true,
-          images: true
+          images: true,
+          packages: true
         }
       })
       return product

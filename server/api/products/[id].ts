@@ -17,7 +17,8 @@ export default defineEventHandler(async (event) => {
     include: {
       images: true,
       units: true,
-      category: true
+      category: true,
+      packages: true
     }
   })
 
@@ -41,6 +42,7 @@ export default defineEventHandler(async (event) => {
     let description = product.description
     let isActive = product.isActive
     let unitsRaw = ''
+    let packageIdsRaw = ''
     let retainedImagesRaw = ''
     const files: { buffer: Buffer, filename: string, mimeType: string, sequence: number }[] = []
 
@@ -51,6 +53,7 @@ export default defineEventHandler(async (event) => {
       if (field.name === 'description') description = field.data.toString('utf-8')
       if (field.name === 'is_active') isActive = field.data.toString('utf-8') === 'true'
       if (field.name === 'units') unitsRaw = field.data.toString('utf-8')
+      if (field.name === 'package_ids') packageIdsRaw = field.data.toString('utf-8')
       if (field.name === 'retained_images') retainedImagesRaw = field.data.toString('utf-8')
       
       if (field.name && field.name.startsWith('image_') && field.filename) {
@@ -80,6 +83,16 @@ export default defineEventHandler(async (event) => {
         unitsData = JSON.parse(unitsRaw)
       } catch (e) {
         console.error('Failed to parse units', e)
+      }
+    }
+
+    // Process Package IDs
+    let packageIds: number[] = []
+    if (packageIdsRaw) {
+      try {
+        packageIds = JSON.parse(packageIdsRaw)
+      } catch (e) {
+        console.error('Failed to parse package IDs', e)
       }
     }
 
@@ -120,6 +133,9 @@ export default defineEventHandler(async (event) => {
           productCategoryId,
           description,
           isActive,
+          packages: {
+            set: packageIds.map(id => ({ id }))
+          }
         }
       })
 
@@ -166,7 +182,7 @@ export default defineEventHandler(async (event) => {
 
       return await prisma.product.findUnique({
         where: { id },
-        include: { images: true, units: true, category: true }
+        include: { images: true, units: true, category: true, packages: true }
       })
     } catch (error: any) {
       if (error.code === 'P2002') {

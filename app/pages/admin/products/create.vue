@@ -9,11 +9,13 @@ definePageMeta({
 const router = useRouter()
 
 const { data: categories } = await useApiFetch<any[]>('/api/categories')
+const { data: packages } = await useApiFetch<any[]>('/api/packages')
 
 const form = ref({
   name: '',
   slug: '',
   productCategoryId: '',
+  packageIds: [] as number[],
   description: '',
   isActive: true,
 })
@@ -110,6 +112,9 @@ const submitForm = async () => {
     const unitsData = units.value.map(u => ({ label: u.label, price: Number(u.price) }))
     formData.append('units', JSON.stringify(unitsData))
 
+    // Append Packages as JSON string
+    formData.append('package_ids', JSON.stringify(form.value.packageIds))
+
     // Append Images
     images.value.forEach((img, index) => {
       formData.append(`image_${img.sequence}`, img.file, img.file.name)
@@ -175,6 +180,17 @@ const submitForm = async () => {
                     <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                   </select>
                 </div>
+              </div>
+
+              <div class="col-span-full sm:col-span-6">
+                <label class="block text-sm font-medium leading-6 text-gray-900 mb-2">Packages</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  <div v-for="pkg in packages" :key="pkg.id" class="flex items-center gap-x-3 bg-gray-50 p-3 rounded-md border border-gray-200">
+                    <input :id="'pkg-'+pkg.id" type="checkbox" :value="pkg.id" v-model="form.packageIds" class="h-4 w-4 rounded border-gray-300 text-black focus:ring-black" />
+                    <label :for="'pkg-'+pkg.id" class="text-sm font-medium leading-6 text-gray-900 cursor-pointer select-none">{{ pkg.name }} - ${{ pkg.price }}</label>
+                  </div>
+                </div>
+                <p class="mt-2 text-xs text-gray-500" v-if="packages?.length === 0">No packages available.</p>
               </div>
 
               <div class="col-span-full">
