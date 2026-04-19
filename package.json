@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1032.0",
+    "@ckeditor/ckeditor5-build-classic": "^41.4.2",
+    "@ckeditor/ckeditor5-vue": "^7.4.2",
     "@prisma/client": "^6.19.3",
     "bcryptjs": "^3.0.3",
     "jsonwebtoken": "^9.0.3",

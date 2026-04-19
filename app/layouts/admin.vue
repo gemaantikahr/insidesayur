@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { LayoutDashboard, Users, Settings, LogOut, Menu, Bell, Folder } from 'lucide-vue-next'
+import { LayoutDashboard, Users, Settings, LogOut, Menu, Bell, Folder, Package } from 'lucide-vue-next'
 
 const isSidebarOpen = ref(true)
 
 const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { name: 'Categories', href: '/admin/categories', icon: Folder },
+  { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Users', href: '#', icon: Users },
   { name: 'Settings', href: '#', icon: Settings },
 ]
