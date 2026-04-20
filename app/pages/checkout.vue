@@ -45,12 +45,28 @@ async function placeOrder() {
   }
 
   isSubmitting.value = true
-  // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 1500))
   
-  clearCart()
-  isSubmitting.value = false
-  orderSuccess.value = true
+  try {
+    const response = await $fetch('/api/storefront/checkout', {
+      method: 'POST',
+      body: {
+        customer: customer.value,
+        cart: cart.value,
+        selectedDeliveryId: selectedDeliveryId.value,
+        totalAmount: finalTotal.value
+      }
+    })
+
+    clearCart()
+    isSubmitting.value = false
+    
+    // Redirect to transaction detail
+    navigateTo(`/transactions/${response.id}`)
+  } catch (error) {
+    console.error('Checkout failed:', error)
+    alert('Terjadi kesalahan saat memproses pesanan. Silakan coba lagi.')
+    isSubmitting.value = false
+  }
 }
 
 const mapContainer = ref<HTMLElement | null>(null)
@@ -143,20 +159,8 @@ onMounted(async () => {
 <template>
   <div class="bg-surface-container-lowest min-h-screen pb-32">
     
-    <!-- Success State -->
-    <div v-if="orderSuccess" class="px-6 py-20 text-center">
-      <div class="w-24 h-24 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center mx-auto mb-6">
-        <span class="material-symbols-outlined text-5xl">check_circle</span>
-      </div>
-      <h2 class="font-headline text-3xl font-extrabold text-on-surface mb-4">Pesanan Berhasil!</h2>
-      <p class="font-body text-on-surface-variant mb-10">Terima kasih telah berbelanja di dinosayurus. Kami akan segera memproses sayuran segar Anda.</p>
-      <NuxtLink to="/" class="inline-flex w-full bg-primary text-on-primary font-headline font-bold text-lg rounded-full py-4 px-8 justify-center hover:bg-primary-dim transition-colors">
-        Kembali Belanja
-      </NuxtLink>
-    </div>
-
     <!-- Empty Cart -->
-    <div v-else-if="cart.length === 0" class="px-6 py-32 text-center">
+    <div v-if="cart.length === 0" class="px-6 py-32 text-center">
       <span class="material-symbols-outlined text-6xl text-outline-variant mb-4">shopping_cart</span>
       <h2 class="font-headline text-2xl font-bold text-on-surface mb-2">Keranjang kosong</h2>
       <p class="font-body text-on-surface-variant mb-10">Yuk mulai belanja sayur dan buah segar!</p>
