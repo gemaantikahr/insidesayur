@@ -14,6 +14,18 @@ const customer = ref({
   lng: null as number | null,
 })
 
+const { data: deliveries } = await useFetch<any[]>('/api/storefront/deliveries')
+const selectedDeliveryId = ref<number | null>(null)
+
+const selectedDelivery = computed(() => {
+  return deliveries.value?.find((d) => d.id === selectedDeliveryId.value)
+})
+
+const finalTotal = computed(() => {
+  const deliveryPrice = selectedDelivery.value ? Number(selectedDelivery.value.price) : 0
+  return cartTotal.value + deliveryPrice
+})
+
 const isSubmitting = ref(false)
 const orderSuccess = ref(false)
 
@@ -24,6 +36,11 @@ function formatPrice(price: number) {
 async function placeOrder() {
   if (!customer.value.name || !customer.value.phone || !customer.value.address) {
     alert('Mohon lengkapi data pengiriman Anda.')
+    return
+  }
+
+  if (!selectedDeliveryId.value) {
+    alert('Mohon pilih opsi pengiriman.')
     return
   }
 
@@ -195,6 +212,26 @@ onMounted(async () => {
       <!-- Spacer -->
       <div class="h-2 bg-surface-container-low"></div>
 
+      <!-- Delivery Options -->
+      <div class="bg-surface-container-lowest px-4 py-6">
+        <h2 class="font-headline font-bold text-lg mb-4 text-on-surface">Pilihan Pengiriman</h2>
+        <div class="space-y-3">
+          <label v-for="delivery in deliveries" :key="delivery.id" class="flex items-center p-4 border rounded-xl cursor-pointer transition-colors" :class="selectedDeliveryId === delivery.id ? 'border-primary bg-primary-container/10' : 'border-outline-variant/30 hover:border-outline'">
+            <input type="radio" :value="delivery.id" v-model="selectedDeliveryId" class="w-4 h-4 text-primary bg-surface border-outline focus:ring-primary focus:ring-2" />
+            <div class="ml-3 flex-grow">
+              <span class="block font-headline font-bold text-on-surface text-sm">{{ delivery.label }}</span>
+            </div>
+            <div class="text-right">
+              <span v-if="delivery.strikeoutPrice" class="block text-xs line-through text-outline-variant">Rp{{ formatPrice(delivery.strikeoutPrice) }}</span>
+              <span class="block font-headline font-bold text-primary">Rp{{ formatPrice(delivery.price) }}</span>
+            </div>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Spacer -->
+      <div class="h-2 bg-surface-container-low"></div>
+
       <!-- Customer Details Form -->
       <div class="bg-surface-container-lowest px-4 py-6">
         <h2 class="font-headline font-bold text-lg mb-4 text-on-surface">Detail Pengiriman</h2>
@@ -242,11 +279,12 @@ onMounted(async () => {
         </div>
         <div class="flex justify-between items-center mb-4">
           <span class="font-body text-sm text-on-surface-variant">Ongkos Kirim</span>
-          <span class="font-body text-sm font-semibold text-primary">Gratis</span>
+          <span v-if="selectedDelivery" class="font-body text-sm font-semibold text-primary">Rp{{ formatPrice(selectedDelivery.price) }}</span>
+          <span v-else class="font-body text-sm font-semibold text-outline-variant">Pilih pengiriman</span>
         </div>
         <div class="pt-4 border-t border-outline-variant/10 flex justify-between items-center">
           <span class="font-headline font-bold text-on-surface">Total Tagihan</span>
-          <span class="font-headline text-xl font-extrabold text-primary">Rp{{ formatPrice(cartTotal) }}</span>
+          <span class="font-headline text-xl font-extrabold text-primary">Rp{{ formatPrice(finalTotal) }}</span>
         </div>
       </div>
 
@@ -258,14 +296,14 @@ onMounted(async () => {
     <div class="max-w-screen-md mx-auto flex items-center gap-4">
       <div class="flex-grow hidden sm:block">
         <span class="block font-label text-xs text-on-surface-variant uppercase tracking-widest">Total</span>
-        <span class="block font-headline text-2xl font-extrabold text-primary leading-none mt-1">Rp{{ formatPrice(cartTotal) }}</span>
+        <span class="block font-headline text-2xl font-extrabold text-primary leading-none mt-1">Rp{{ formatPrice(finalTotal) }}</span>
       </div>
       <button type="submit" form="checkout-form" :disabled="isSubmitting" class="w-full sm:w-auto flex-grow sm:flex-grow-0 bg-gradient-to-br from-primary to-primary-dim text-on-primary font-headline font-bold text-lg rounded-full py-4 px-8 shadow-lg shadow-primary/20 flex justify-center items-center gap-2 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-70 disabled:active:scale-100">
         <span v-if="isSubmitting" class="material-symbols-outlined animate-spin">refresh</span>
         <span v-if="isSubmitting">Memproses...</span>
         <template v-else>
           <span>Buat Pesanan</span>
-          <span class="sm:hidden ml-1">• Rp{{ formatPrice(cartTotal) }}</span>
+          <span class="sm:hidden ml-1">• Rp{{ formatPrice(finalTotal) }}</span>
         </template>
       </button>
     </div>
