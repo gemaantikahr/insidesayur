@@ -10,6 +10,8 @@ const customer = ref({
   phone: '',
   address: '',
   notes: '',
+  lat: null as number | null,
+  lng: null as number | null,
 })
 
 const isSubmitting = ref(false)
@@ -33,6 +35,92 @@ async function placeOrder() {
   isSubmitting.value = false
   orderSuccess.value = true
 }
+
+const mapContainer = ref<HTMLElement | null>(null)
+
+let leafletMap: any = null
+let leafletMarker: any = null
+
+function getCurrentLocation() {
+  if (navigator.geolocation && leafletMap && leafletMarker) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const userLoc: [number, number] = [position.coords.latitude, position.coords.longitude]
+        leafletMap.setView(userLoc, 15)
+        leafletMarker.setLatLng(userLoc)
+        customer.value.lat = userLoc[0]
+        customer.value.lng = userLoc[1]
+      },
+      () => {
+        alert('Tidak dapat mengakses lokasi Anda. Mohon pastikan izin lokasi diaktifkan di browser Anda.')
+      }
+    )
+  } else {
+    alert('Browser Anda tidak mendukung fitur lokasi.')
+  }
+}
+
+onMounted(async () => {
+  if (typeof window !== 'undefined') {
+    // Dynamic import to avoid SSR issues with Leaflet
+    const L = await import('leaflet')
+    await import('leaflet/dist/leaflet.css')
+    
+    // Fix for Leaflet default icon path issues with bundlers
+    const customIcon = L.icon({
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    })
+
+    // Default location (e.g. Jakarta)
+    const defaultLocation: [number, number] = [-6.2088, 106.8456]
+    customer.value.lat = defaultLocation[0]
+    customer.value.lng = defaultLocation[1]
+
+    if (mapContainer.value) {
+      leafletMap = L.map(mapContainer.value).setView(defaultLocation, 13)
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(leafletMap)
+
+      leafletMarker = L.marker(defaultLocation, { draggable: true, icon: customIcon }).addTo(leafletMap)
+
+      leafletMarker.on('dragend', () => {
+        const pos = leafletMarker.getLatLng()
+        customer.value.lat = pos.lat
+        customer.value.lng = pos.lng
+      })
+
+      leafletMap.on('click', (e: any) => {
+        leafletMarker.setLatLng(e.latlng)
+        customer.value.lat = e.latlng.lat
+        customer.value.lng = e.latlng.lng
+      })
+
+      // Try to get user's current location
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const userLoc: [number, number] = [position.coords.latitude, position.coords.longitude]
+            leafletMap.setView(userLoc, 15)
+            leafletMarker.setLatLng(userLoc)
+            customer.value.lat = userLoc[0]
+            customer.value.lng = userLoc[1]
+          },
+          () => {
+            console.log('Geolocation permission denied or unavailable.')
+          }
+        )
+      }
+    }
+  }
+})
 </script>
 
 <template>
@@ -127,6 +215,19 @@ async function placeOrder() {
           <div>
             <label class="block font-label text-xs font-bold text-on-surface-variant mb-1 ml-1">Catatan Tambahan (Opsional)</label>
             <input v-model="customer.notes" type="text" class="w-full bg-surface-container-low rounded-xl border-none focus:ring-1 focus:ring-primary px-4 py-3.5 font-body text-sm placeholder:text-outline-variant" placeholder="Contoh: Titip di pos satpam" />
+          </div>
+          <div>
+            <div class="flex justify-between items-end mb-1 ml-1">
+              <label class="block font-label text-xs font-bold text-on-surface-variant">Titik Lokasi (Geser pin pada peta)</label>
+              <button type="button" @click="getCurrentLocation" class="flex items-center gap-1 text-primary hover:text-primary-dim transition-colors text-xs font-bold bg-primary-container/20 hover:bg-primary-container/40 px-2 py-1 rounded-md">
+                <span class="material-symbols-outlined text-[14px]">my_location</span>
+                Lokasi Sekarang
+              </button>
+            </div>
+            <div ref="mapContainer" class="w-full h-64 bg-surface-container-low rounded-xl border border-outline-variant/20 z-0 relative"></div>
+            <p class="font-body text-[10px] text-on-surface-variant mt-1 ml-1">
+              Lokasi yang dipilih: {{ customer.lat?.toFixed(5) }}, {{ customer.lng?.toFixed(5) }}
+            </p>
           </div>
         </form>
       </div>
