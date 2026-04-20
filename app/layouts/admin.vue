@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LayoutDashboard, Users, Settings, LogOut, Menu, Bell, Folder, Package, Box } from 'lucide-vue-next'
+import { LayoutDashboard, Users, Settings, LogOut, Menu, Bell, Folder, Package, Box, Truck } from 'lucide-vue-next'
 
 const isSidebarOpen = ref(true)
 
@@ -8,6 +8,7 @@ const navigation = [
   { name: 'Categories', href: '/admin/categories', icon: Folder },
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Packages', href: '/admin/packages', icon: Box },
+  { name: 'Deliveries', href: '/admin/deliveries', icon: Truck },
   { name: 'Users', href: '#', icon: Users },
   { name: 'Settings', href: '#', icon: Settings },
 ]
