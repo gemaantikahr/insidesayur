@@ -6,6 +6,7 @@ definePageMeta({
   middleware: 'auth'
 })
 
+const { $swal } = useNuxtApp()
 const route = useRoute()
 const router = useRouter()
 const productId = route.params.id
@@ -16,8 +17,14 @@ const { data: product, pending: fetching, error } = await useApiFetch<any>(`/api
 
 if (error.value || !product.value) {
   if (!import.meta.server) {
-    alert('Product not found')
-    router.push('/admin/products')
+    $swal.fire({
+      icon: 'error',
+      title: 'Not Found',
+      text: 'Product not found',
+      confirmButtonColor: '#000'
+    }).then(() => {
+      router.push('/admin/products')
+    })
   }
 }
 

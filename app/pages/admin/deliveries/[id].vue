@@ -7,15 +7,21 @@ definePageMeta({
 })
 
 const route = useRoute()
-const router = useRouter()
 const deliveryId = route.params.id
+const { $swal } = useNuxtApp()
 
 const { data: delivery, pending: fetching, error } = await useApiFetch<any>(`/api/deliveries/${deliveryId}`)
 
 if (error.value || !delivery.value) {
   if (!import.meta.server) {
-    alert('Delivery option not found')
-    router.push('/admin/deliveries')
+    $swal.fire({
+      icon: 'error',
+      title: 'Delivery Option Not Found',
+      text: 'The delivery option you are looking for does not exist.',
+      confirmButtonColor: '#000'
+    }).then(() => {
+      navigateTo('/admin/deliveries')
+    })
   }
 }
 

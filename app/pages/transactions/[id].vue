@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ArrowLeft, Clock, MapPin, Package, CheckCircle2 } from 'lucide-vue-next'
+import { ArrowLeft, Clock, MapPin, Package } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'default' })
 
+const { $swal } = useNuxtApp()
 const route = useRoute()
 const transactionId = route.params.id
 
@@ -10,8 +11,14 @@ const { data: transaction, pending, error } = await useFetch<any>(`/api/storefro
 
 if (error.value || !transaction.value) {
   if (!import.meta.server) {
-    alert('Transaksi tidak ditemukan.')
-    navigateTo('/')
+    $swal.fire({
+      icon: 'error',
+      title: 'Tidak Ditemukan',
+      text: 'Transaksi tidak ditemukan.',
+      confirmButtonColor: '#000'
+    }).then(() => {
+      navigateTo('/')
+    })
   }
 }
 
@@ -20,11 +27,52 @@ function formatPrice(price: number) {
 }
 
 function formatDate(dateString: string) {
-  const options: Intl.DateTimeFormatOptions = { 
+  const options: Intl.DateTimeFormatOptions = {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     hour: '2-digit', minute: '2-digit'
   }
   return new Date(dateString).toLocaleDateString('id-ID', options)
+}
+
+function generateWhatsAppMessage() {
+  if (!transaction.value) return ''
+
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
+  const detailUrl = `${baseUrl}/transactions/${transaction.value.id}`
+
+  let message = `*KONFIRMASI PESANAN*\n\n`
+  message += `ID Transaksi: ${transaction.value.id}\n`
+  message += `Tanggal: ${formatDate(transaction.value.createdAt)}\n`
+  message += `Status: ${transaction.value.status}\n\n`
+
+  message += `*DETAIL PESANAN:*\n`
+  transaction.value.items.forEach((item: any, index: number) => {
+    message += `${index + 1}. ${item.product.name}\n`
+    message += `   ${item.unit.label}${item.package ? ' | ' + item.package.name : ''}\n`
+    message += `   ${item.quantity}x Rp${formatPrice(item.price)} = Rp${formatPrice(item.totalPrice)}\n\n`
+  })
+
+  message += `*PENGIRIMAN:*\n`
+  message += `Metode: ${transaction.value.delivery.label}\n`
+  message += `Nama: ${transaction.value.customerName}\n`
+  message += `WhatsApp: ${transaction.value.customerPhone}\n`
+  message += `Alamat: ${transaction.value.customerAddress}\n`
+  if (transaction.value.customerNotes) {
+    message += `Catatan: ${transaction.value.customerNotes}\n`
+  }
+  message += `\n`
+
+  message += `*RINGKASAN PEMBAYARAN:*\n`
+  const totalItems = transaction.value.items.reduce((acc: number, item: any) => acc + item.quantity, 0)
+  const subtotal = transaction.value.totalAmount - transaction.value.deliveryPrice
+  message += `Subtotal (${totalItems} barang): Rp${formatPrice(subtotal)}\n`
+  message += `Ongkir: Rp${formatPrice(transaction.value.deliveryPrice)}\n`
+  message += `*TOTAL: Rp${formatPrice(transaction.value.totalAmount)}*\n\n`
+
+  message += `Link Detail: ${detailUrl}\n\n`
+  message += `Mohon konfirmasi pesanan saya. Terima kasih!`
+
+  return encodeURIComponent(message)
 }
 </script>
 
@@ -150,7 +198,7 @@ function formatDate(dateString: string) {
       </div>
 
       <div class="px-4 pb-8">
-        <a :href="`https://wa.me/6281234567890?text=Halo%20min,%20saya%20mau%20konfirmasi%20pesanan%20dengan%20ID%20${transaction.id}`" target="_blank" class="w-full bg-[#25D366] text-white font-headline font-bold text-lg rounded-full py-4 flex justify-center items-center gap-2 hover:bg-[#1ebd5b] active:scale-[0.98] transition-all shadow-lg shadow-[#25D366]/20">
+        <a :href="`https://wa.me/6289680988232?text=${generateWhatsAppMessage()}`" target="_blank" class="w-full bg-[#25D366] text-white font-headline font-bold text-lg rounded-full py-4 flex justify-center items-center gap-2 hover:bg-[#1ebd5b] active:scale-[0.98] transition-all shadow-lg shadow-[#25D366]/20">
           <span class="material-symbols-outlined">chat</span>
           Konfirmasi via WhatsApp
         </a>

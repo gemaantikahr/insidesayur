@@ -6,16 +6,39 @@ definePageMeta({
   middleware: 'auth'
 })
 
+const { $swal } = useNuxtApp()
 const { data: packages, pending, refresh } = await useApiFetch<any[]>('/api/packages')
 
 const deletePackage = async (id: number) => {
-  if (confirm('Are you sure you want to delete this package?')) {
-    try {
-      await useApi(`/api/packages/${id}`, { method: 'DELETE' })
-      await refresh()
-    } catch (error) {
-      alert('Failed to delete package')
-    }
+  const result = await $swal.fire({
+    title: 'Delete Package?',
+    text: 'Are you sure you want to delete this package? This action cannot be undone.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc2626',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel'
+  })
+
+  if (!result.isConfirmed) return
+
+  try {
+    await useApi(`/api/packages/${id}`, { method: 'DELETE' })
+    await refresh()
+    await $swal.fire({
+      icon: 'success',
+      title: 'Deleted!',
+      text: 'Package has been deleted successfully.',
+      confirmButtonColor: '#000'
+    })
+  } catch (error) {
+    await $swal.fire({
+      icon: 'error',
+      title: 'Failed',
+      text: 'Failed to delete package. Please try again.',
+      confirmButtonColor: '#000'
+    })
   }
 }
 </script>

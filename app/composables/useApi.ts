@@ -6,6 +6,7 @@ export function useApi<T = any>(
 
   return $fetch<T>(request, {
     baseURL: config.public.apiBase as string,
+    credentials: 'include',
     ...opts,
   })
 }

@@ -6,16 +6,39 @@ definePageMeta({
   middleware: 'auth'
 })
 
+const { $swal } = useNuxtApp()
 const { data: products, pending, refresh } = await useApiFetch<any[]>('/api/products')
 
 const deleteProduct = async (id: number) => {
-  if (confirm('Are you sure you want to delete this product?')) {
-    try {
-      await useApi(`/api/products/${id}`, { method: 'DELETE' })
-      await refresh()
-    } catch (error) {
-      alert('Failed to delete product')
-    }
+  const result = await $swal.fire({
+    title: 'Delete Product?',
+    text: 'Are you sure you want to delete this product? This action cannot be undone.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc2626',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel'
+  })
+
+  if (!result.isConfirmed) return
+
+  try {
+    await useApi(`/api/products/${id}`, { method: 'DELETE' })
+    await refresh()
+    await $swal.fire({
+      icon: 'success',
+      title: 'Deleted!',
+      text: 'Product has been deleted successfully.',
+      confirmButtonColor: '#000'
+    })
+  } catch (error) {
+    await $swal.fire({
+      icon: 'error',
+      title: 'Failed',
+      text: 'Failed to delete product. Please try again.',
+      confirmButtonColor: '#000'
+    })
   }
 }
 </script>

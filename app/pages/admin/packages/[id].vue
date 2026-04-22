@@ -7,15 +7,21 @@ definePageMeta({
 })
 
 const route = useRoute()
-const router = useRouter()
 const packageId = route.params.id
+const { $swal } = useNuxtApp()
 
 const { data: pkg, pending: fetching, error } = await useApiFetch<any>(`/api/packages/${packageId}`)
 
 if (error.value || !pkg.value) {
   if (!import.meta.server) {
-    alert('Package not found')
-    router.push('/admin/packages')
+    $swal.fire({
+      icon: 'error',
+      title: 'Package Not Found',
+      text: 'The package you are looking for does not exist.',
+      confirmButtonColor: '#000'
+    }).then(() => {
+      navigateTo('/admin/packages')
+    })
   }
 }
 

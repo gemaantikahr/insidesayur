@@ -7,16 +7,21 @@ definePageMeta({
 })
 
 const route = useRoute()
-const router = useRouter()
 const categoryId = route.params.id
+const { $swal } = useNuxtApp()
 
 const { data: category, pending: fetching, error } = await useApiFetch<any>(`/api/categories/${categoryId}`)
 
 if (error.value || !category.value) {
-  // If not found, you can redirect or show error
   if (!import.meta.server) {
-    alert('Category not found')
-    router.push('/admin/categories')
+    $swal.fire({
+      icon: 'error',
+      title: 'Category Not Found',
+      text: 'The category you are looking for does not exist.',
+      confirmButtonColor: '#000'
+    }).then(() => {
+      navigateTo('/admin/categories')
+    })
   }
 }
 

@@ -8,6 +8,7 @@ export function useApiFetch<T>(
 
   return useFetch<T>(request, {
     baseURL: config.public.apiBase as string,
+    credentials: 'include',
     ...opts,
   })
 }

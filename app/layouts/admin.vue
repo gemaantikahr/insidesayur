@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { LayoutDashboard, Users, Settings, LogOut, Menu, Bell, Folder, Package, Box, Truck } from 'lucide-vue-next'
+import { LayoutDashboard, Users, Settings, LogOut, Menu, Bell, Folder, Package, Box, Truck, ShoppingCart } from 'lucide-vue-next'
 
 const isSidebarOpen = ref(true)
 
 const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+  { name: 'Transactions', href: '/admin/transactions', icon: ShoppingCart },
   { name: 'Categories', href: '/admin/categories', icon: Folder },
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Packages', href: '/admin/packages', icon: Box },

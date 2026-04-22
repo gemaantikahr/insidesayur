@@ -6,16 +6,39 @@ definePageMeta({
   middleware: 'auth'
 })
 
+const { $swal } = useNuxtApp()
 const { data: categories, pending, refresh } = await useApiFetch<any[]>('/api/categories')
 
 const deleteCategory = async (id: number) => {
-  if (confirm('Are you sure you want to delete this category?')) {
-    try {
-      await useApi(`/api/categories/${id}`, { method: 'DELETE' })
-      await refresh()
-    } catch (error) {
-      alert('Failed to delete category')
-    }
+  const result = await $swal.fire({
+    title: 'Delete Category?',
+    text: 'Are you sure you want to delete this category? This action cannot be undone.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc2626',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel'
+  })
+
+  if (!result.isConfirmed) return
+
+  try {
+    await useApi(`/api/categories/${id}`, { method: 'DELETE' })
+    await refresh()
+    await $swal.fire({
+      icon: 'success',
+      title: 'Deleted!',
+      text: 'Category has been deleted successfully.',
+      confirmButtonColor: '#000'
+    })
+  } catch (error) {
+    await $swal.fire({
+      icon: 'error',
+      title: 'Failed',
+      text: 'Failed to delete category. Please try again.',
+      confirmButtonColor: '#000'
+    })
   }
 }
 </script>

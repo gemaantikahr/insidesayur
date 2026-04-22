@@ -6,6 +6,7 @@ definePageMeta({
   middleware: 'auth'
 })
 
+const { $swal } = useNuxtApp()
 const { data: deliveries, pending, refresh } = await useApiFetch<any[]>('/api/deliveries')
 
 const formatPrice = (value: any) => {
@@ -14,13 +15,35 @@ const formatPrice = (value: any) => {
 }
 
 const deleteDelivery = async (id: number) => {
-  if (confirm('Are you sure you want to delete this delivery option?')) {
-    try {
-      await useApi(`/api/deliveries/${id}`, { method: 'DELETE' })
-      await refresh()
-    } catch (error) {
-      alert('Failed to delete delivery option')
-    }
+  const result = await $swal.fire({
+    title: 'Delete Delivery Option?',
+    text: 'Are you sure you want to delete this delivery option? This action cannot be undone.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc2626',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel'
+  })
+
+  if (!result.isConfirmed) return
+
+  try {
+    await useApi(`/api/deliveries/${id}`, { method: 'DELETE' })
+    await refresh()
+    await $swal.fire({
+      icon: 'success',
+      title: 'Deleted!',
+      text: 'Delivery option has been deleted successfully.',
+      confirmButtonColor: '#000'
+    })
+  } catch (error) {
+    await $swal.fire({
+      icon: 'error',
+      title: 'Failed',
+      text: 'Failed to delete delivery option. Please try again.',
+      confirmButtonColor: '#000'
+    })
   }
 }
 </script>

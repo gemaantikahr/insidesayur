@@ -3,6 +3,7 @@ definePageMeta({ layout: 'default' })
 
 useHead({ title: 'Checkout — dinosayurus' })
 
+const { $swal } = useNuxtApp()
 const { cart, cartTotal, removeFromCart, updateQuantity, clearCart } = useCart()
 
 const customer = ref({
@@ -35,17 +36,27 @@ function formatPrice(price: number) {
 
 async function placeOrder() {
   if (!customer.value.name || !customer.value.phone || !customer.value.address) {
-    alert('Mohon lengkapi data pengiriman Anda.')
+    await $swal.fire({
+      icon: 'warning',
+      title: 'Data Tidak Lengkap',
+      text: 'Mohon lengkapi data pengiriman Anda.',
+      confirmButtonColor: '#000'
+    })
     return
   }
 
   if (!selectedDeliveryId.value) {
-    alert('Mohon pilih opsi pengiriman.')
+    await $swal.fire({
+      icon: 'warning',
+      title: 'Pilih Pengiriman',
+      text: 'Mohon pilih opsi pengiriman.',
+      confirmButtonColor: '#000'
+    })
     return
   }
 
   isSubmitting.value = true
-  
+
   try {
     const response = await $fetch('/api/storefront/checkout', {
       method: 'POST',
@@ -59,12 +70,17 @@ async function placeOrder() {
 
     clearCart()
     isSubmitting.value = false
-    
+
     // Redirect to transaction detail
     navigateTo(`/transactions/${response.id}`)
   } catch (error) {
     console.error('Checkout failed:', error)
-    alert('Terjadi kesalahan saat memproses pesanan. Silakan coba lagi.')
+    await $swal.fire({
+      icon: 'error',
+      title: 'Gagal',
+      text: 'Terjadi kesalahan saat memproses pesanan. Silakan coba lagi.',
+      confirmButtonColor: '#000'
+    })
     isSubmitting.value = false
   }
 }
@@ -85,11 +101,21 @@ function getCurrentLocation() {
         customer.value.lng = userLoc[1]
       },
       () => {
-        alert('Tidak dapat mengakses lokasi Anda. Mohon pastikan izin lokasi diaktifkan di browser Anda.')
+        $swal.fire({
+          icon: 'error',
+          title: 'Akses Lokasi Ditolak',
+          text: 'Tidak dapat mengakses lokasi Anda. Mohon pastikan izin lokasi diaktifkan di browser Anda.',
+          confirmButtonColor: '#000'
+        })
       }
     )
   } else {
-    alert('Browser Anda tidak mendukung fitur lokasi.')
+    $swal.fire({
+      icon: 'error',
+      title: 'Tidak Didukung',
+      text: 'Browser Anda tidak mendukung fitur lokasi.',
+      confirmButtonColor: '#000'
+    })
   }
 }
 
