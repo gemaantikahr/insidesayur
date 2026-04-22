@@ -7,10 +7,12 @@ export interface CartItem {
     image: string | null
   }
   unit: {
+    id: number
     label: string
     price: number
   }
   pkg: {
+    id: number
     name: string
     price: number
   } | null

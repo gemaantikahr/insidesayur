@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { cartItemCount } = useCart()
+const route = useRoute()
 </script>
 
 <template>
@@ -26,7 +27,7 @@ const { cartItemCount } = useCart()
     </main>
 
     <!-- Bottom nav -->
-    <nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pt-3 pb-6 bg-surface rounded-t-3xl z-50 shadow-[0_-4px_32px_rgba(28,109,37,0.06)] border-t border-outline-variant/10">
+    <nav v-if="route.path !== '/checkout'" class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pt-3 pb-6 bg-surface rounded-t-3xl z-50 shadow-[0_-4px_32px_rgba(28,109,37,0.06)] border-t border-outline-variant/10">
       <NuxtLink to="/" class="flex flex-col items-center justify-center bg-on-primary text-primary rounded-full px-5 py-1.5 transition-all active:scale-90 duration-200">
         <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">potted_plant</span>
         <span class="font-label text-[10px] font-semibold uppercase tracking-widest mt-0.5">Market</span>

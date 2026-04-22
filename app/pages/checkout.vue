@@ -293,23 +293,23 @@ onMounted(async () => {
       </div>
 
     </div>
-  </div>
 
-  <!-- Mobile Native Floating Checkout Bar -->
-  <div v-if="cart.length > 0 && !orderSuccess" class="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-xl pt-4 pb-6 px-4 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] z-50 border-t border-outline-variant/15">
-    <div class="max-w-screen-md mx-auto flex items-center gap-4">
-      <div class="flex-grow hidden sm:block">
-        <span class="block font-label text-xs text-on-surface-variant uppercase tracking-widest">Total</span>
-        <span class="block font-headline text-2xl font-extrabold text-primary leading-none mt-1">Rp{{ formatPrice(finalTotal) }}</span>
+    <!-- Mobile Native Floating Checkout Bar -->
+    <div v-if="cart.length > 0 && !orderSuccess" class="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-xl pt-4 pb-6 px-4 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] z-50 border-t border-outline-variant/15">
+      <div class="max-w-screen-md mx-auto flex items-center gap-4">
+        <div class="flex-grow hidden sm:block">
+          <span class="block font-label text-xs text-on-surface-variant uppercase tracking-widest">Total</span>
+          <span class="block font-headline text-2xl font-extrabold text-primary leading-none mt-1">Rp{{ formatPrice(finalTotal) }}</span>
+        </div>
+        <button type="submit" form="checkout-form" :disabled="isSubmitting" class="w-full sm:w-auto flex-grow sm:flex-grow-0 bg-gradient-to-br from-primary to-primary-dim text-on-primary font-headline font-bold text-lg rounded-full py-4 px-8 shadow-lg shadow-primary/20 flex justify-center items-center gap-2 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-70 disabled:active:scale-100">
+          <span v-if="isSubmitting" class="material-symbols-outlined animate-spin">refresh</span>
+          <span v-if="isSubmitting">Memproses...</span>
+          <template v-else>
+            <span>Buat Pesanan</span>
+            <span class="sm:hidden ml-1">• Rp{{ formatPrice(finalTotal) }}</span>
+          </template>
+        </button>
       </div>
-      <button type="submit" form="checkout-form" :disabled="isSubmitting" class="w-full sm:w-auto flex-grow sm:flex-grow-0 bg-gradient-to-br from-primary to-primary-dim text-on-primary font-headline font-bold text-lg rounded-full py-4 px-8 shadow-lg shadow-primary/20 flex justify-center items-center gap-2 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-70 disabled:active:scale-100">
-        <span v-if="isSubmitting" class="material-symbols-outlined animate-spin">refresh</span>
-        <span v-if="isSubmitting">Memproses...</span>
-        <template v-else>
-          <span>Buat Pesanan</span>
-          <span class="sm:hidden ml-1">• Rp{{ formatPrice(finalTotal) }}</span>
-        </template>
-      </button>
     </div>
   </div>
 </template>

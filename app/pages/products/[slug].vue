@@ -86,10 +86,12 @@ function handleAddToCart() {
       image: currentImage.value,
     },
     unit: {
+      id: selectedUnit.value.id,
       label: selectedUnit.value.label,
       price: parseFloat(selectedUnit.value.price),
     },
     pkg: selectedPackage.value ? {
+      id: selectedPackage.value.id,
       name: selectedPackage.value.name,
       price: parseFloat(selectedPackage.value.price),
     } : null,
