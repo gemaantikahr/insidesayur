@@ -1,12 +1,53 @@
 <script setup lang="ts">
-import { Eye } from 'lucide-vue-next'
+import { Eye, Search, Filter } from 'lucide-vue-next'
 
 definePageMeta({
   layout: 'admin',
   middleware: 'auth'
 })
 
-const { data: transactions, pending } = await useApiFetch<any[]>('/api/admin/transactions')
+const filters = ref({
+  status: 'ALL',
+  search: '',
+  startDate: '',
+  endDate: ''
+})
+
+const queryParams = computed(() => {
+  const params: any = {}
+  if (filters.value.status !== 'ALL') params.status = filters.value.status
+  if (filters.value.search) params.search = filters.value.search
+  if (filters.value.startDate) params.startDate = filters.value.startDate
+  if (filters.value.endDate) params.endDate = filters.value.endDate
+  return params
+})
+
+const { data: transactions, pending, refresh } = await useApiFetch<any[]>('/api/admin/transactions', {
+  query: queryParams
+})
+
+const statusOptions = [
+  { value: 'ALL', label: 'All Status' },
+  { value: 'PENDING', label: 'Pending' },
+  { value: 'CANCELLED', label: 'Cancelled' },
+  { value: 'IN_PREPARE', label: 'In Prepare' },
+  { value: 'WAITING_FOR_DRIVER', label: 'Waiting for Driver' },
+  { value: 'IN_DELIVERY', label: 'In Delivery' },
+  { value: 'COMPLETED', label: 'Completed' }
+]
+
+function resetFilters() {
+  filters.value = {
+    status: 'ALL',
+    search: '',
+    startDate: '',
+    endDate: ''
+  }
+}
+
+watch(filters, () => {
+  refresh()
+}, { deep: true })
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat('id-ID').format(price)
@@ -49,6 +90,80 @@ function getStatusLabel(status: string) {
   <div>
     <div class="sm:flex sm:items-center sm:justify-between">
       <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Transactions</h1>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="mt-6 bg-white shadow rounded-lg p-4">
+      <div class="flex items-center gap-2 mb-4">
+        <Filter class="h-5 w-5 text-gray-500" />
+        <h2 class="text-lg font-semibold text-gray-900">Filters</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Search -->
+        <div>
+          <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search class="h-4 w-4 text-gray-400" />
+            </div>
+            <input
+              v-model="filters.search"
+              type="text"
+              id="search"
+              placeholder="Name, phone, or ID..."
+              class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+          </div>
+        </div>
+
+        <!-- Status Filter -->
+        <div>
+          <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+          <select
+            v-model="filters.status"
+            id="status"
+            class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+          >
+            <option v-for="option in statusOptions" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Start Date -->
+        <div>
+          <label for="startDate" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+          <input
+            v-model="filters.startDate"
+            type="date"
+            id="startDate"
+            class="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          />
+        </div>
+
+        <!-- End Date -->
+        <div>
+          <label for="endDate" class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+          <input
+            v-model="filters.endDate"
+            type="date"
+            id="endDate"
+            class="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          />
+        </div>
+      </div>
+
+      <!-- Reset Button -->
+      <div class="mt-4 flex justify-end">
+        <button
+          @click="resetFilters"
+          type="button"
+          class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          Reset Filters
+        </button>
+      </div>
     </div>
 
     <div class="mt-8 flex flex-col">
